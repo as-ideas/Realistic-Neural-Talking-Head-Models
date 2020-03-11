@@ -19,27 +19,14 @@ class VidDataSet(Dataset):
         self.device = device
 
     def __len__(self):
-        return len(sorted(Path(self.path_to_mp4).glob('**/*.mp4')))
+        return len(list(Path(self.path_to_mp4).glob('**/*.mp4')))
 
     def __getitem__(self, idx):
         vid_idx = idx
         if idx < 0:
             idx = self.__len__() + idx
-        # for video in sorted(Path(self.path_to_mp4).glob('**/*.mp4')):
-        for person_id in os.listdir(self.path_to_mp4):
-            for video_id in os.listdir(os.path.join(self.path_to_mp4, person_id)):
-                for video in os.listdir(
-                    os.path.join(self.path_to_mp4, person_id, video_id)
-                ):
-                    if idx != 0:
-                        idx -= 1
-                    else:
-                        break
-                if idx == 0:
-                    break
-            if idx == 0:
-                break
-        path = os.path.join(self.path_to_mp4, person_id, video_id, video)
+
+        path = list(Path(self.path_to_mp4).glob('**/*.mp4'))[idx]
         frame_mark = select_frames(path, self.K)
         frame_mark = generate_landmarks(frame_mark, device=self.device)
         frame_mark = torch.from_numpy(np.array(frame_mark)).type(
