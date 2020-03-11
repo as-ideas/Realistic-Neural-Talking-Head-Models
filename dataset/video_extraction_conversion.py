@@ -3,7 +3,7 @@ import random
 import face_alignment
 from matplotlib import pyplot as plt
 import numpy as np
-import os
+from pathlib import Path
 
 from webcam_demo.webcam_extraction_conversion import (
     crop_and_reshape_preds,
@@ -14,7 +14,7 @@ from network.utils import timer
 
 @timer
 def select_frames(video_path, K):
-    cap = cv2.VideoCapture(video_path)
+    cap = cv2.VideoCapture(str(video_path))
 
     n_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     # unused
@@ -182,8 +182,8 @@ def generate_landmarks(frames_list, device):
 @timer
 def select_images_frames(path_to_images):
     images_list = []
-    for image_name in os.listdir(path_to_images):
-        img = cv2.imread(os.path.join(path_to_images, image_name))
+    for image_path in Path(path_to_images).glob('*'):
+        img = cv2.imread(image_path)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         images_list.append(img)
     return images_list

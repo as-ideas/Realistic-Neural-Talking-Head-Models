@@ -5,7 +5,7 @@ from torch.utils.tensorboard import SummaryWriter
 from datetime import datetime
 from matplotlib import pyplot as plt
 import pytorch_ssim
-import os
+from pathlib import Path
 import numpy as np
 
 from dataset.dataset_class import VidDataSet
@@ -66,7 +66,7 @@ i_batch_current = 0
 
 
 # initiate checkpoint if inexistant
-if not os.path.isfile(path_to_chkpt):
+if not Path(path_to_chkpt).is_file():
     print('Initiating new checkpoint...')
     torch.save(
         {

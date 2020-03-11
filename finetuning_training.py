@@ -2,10 +2,9 @@ import torch
 from torch.utils.data import DataLoader
 import torch.optim as optim
 import numpy as np
-import os
 from datetime import datetime
 from matplotlib import pyplot as plt
-
+from pathlib import Path
 from dataset.dataset_class import FineTuningImagesDataset, FineTuningVideoDataset
 from network.model import Generator, Discriminator
 from loss.loss_discriminator import LossDSCreal, LossDSCfake
@@ -77,7 +76,7 @@ i_batch_current = 0
 num_epochs = 40
 
 # Warning if checkpoint inexistant
-if not os.path.isfile(path_to_chkpt):
+if not Path(path_to_chkpt).is_file():
     print('ERROR: cannot find checkpoint')
 
 

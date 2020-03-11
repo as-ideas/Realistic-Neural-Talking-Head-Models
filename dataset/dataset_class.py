@@ -1,7 +1,6 @@
 import torch
 from torch.utils.data import Dataset
 from pathlib import Path
-import os
 import numpy as np
 
 from .video_extraction_conversion import (
@@ -46,7 +45,7 @@ class FineTuningImagesDataset(Dataset):
         self.device = device
 
     def __len__(self):
-        return len(os.listdir(self.path_to_images))
+        return len(list(Path(self.path_to_images).glob('*')))
 
     def __getitem__(self, idx):
         frame_mark_images = select_images_frames(self.path_to_images)
