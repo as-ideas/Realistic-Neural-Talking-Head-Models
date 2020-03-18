@@ -2,7 +2,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torchvision
-from .blocks import (
+from network.utils import timer
+from network.blocks import (
     ResBlockDown,
     SelfAttention,
     ResBlock,
@@ -15,6 +16,7 @@ import sys
 
 # components
 class Embedder(nn.Module):
+    @timer
     def __init__(self, in_height):
         super(Embedder, self).__init__()
 
@@ -31,6 +33,7 @@ class Embedder(nn.Module):
         self.resDown6 = ResBlockDown(512, 512)  # out 512*4*4
         self.sum_pooling = nn.AdaptiveMaxPool2d((1, 1))  # out 512*1*1
 
+    @timer
     def forward(self, x, y):
 
         out = torch.cat((x, y), dim=-3)  # out 6*224*224
@@ -72,6 +75,7 @@ class Generator(nn.Module):
     for i in range(1, len(slice_idx)):
         slice_idx[i] = slice_idx[i - 1] + slice_idx[i]
 
+    @timer
     def __init__(self, in_height, finetuning=False, e_finetuning=None):
         super(Generator, self).__init__()
 
@@ -137,10 +141,12 @@ class Generator(nn.Module):
         self.psi = nn.Parameter(torch.rand(self.P_LEN, 1))
         self.e_finetuning = e_finetuning
 
+    @timer
     def finetuning_init(self):
         if self.finetuning:
             self.psi = nn.Parameter(torch.mm(self.p, self.e_finetuning.mean(dim=0)))
 
+    @timer
     def forward(self, y, e):
         if math.isnan(self.p[0, 0]):
             sys.exit()
@@ -207,6 +213,7 @@ class Generator(nn.Module):
 
 
 class Discriminator(nn.Module):
+    @timer
     def __init__(self, num_videos, finetuning=False, e_finetuning=None):
         super(Discriminator, self).__init__()
 
@@ -230,10 +237,12 @@ class Discriminator(nn.Module):
         self.e_finetuning = e_finetuning
         self.w_prime = nn.Parameter(torch.randn(512, 1))
 
+    @timer
     def finetuning_init(self):
         if self.finetuning:
             self.w_prime = nn.Parameter(self.w_0 + self.e_finetuning.mean(dim=0))
 
+    @timer
     def forward(self, x, y, i):
         out = torch.cat((x, y), dim=-3)  # out B*6*224*224
 
@@ -280,6 +289,7 @@ class Discriminator(nn.Module):
 
 
 class Cropped_VGG19(nn.Module):
+    @timer
     def __init__(self):
         super(Cropped_VGG19, self).__init__()
 
@@ -297,6 +307,7 @@ class Cropped_VGG19(nn.Module):
         # self.conv5_2 = nn.Conv2d(512,512,3)
         # self.conv5_3 = nn.Conv2d(512,512,3)
 
+    @timer
     def forward(self, x):
         conv1_1_pad = F.pad(x, (1, 1, 1, 1))
         conv1_1 = self.conv1_1(conv1_1_pad)
@@ -351,16 +362,19 @@ class Cropped_VGG19(nn.Module):
 
 
 class PartialInceptionNetwork(torch.nn.Module):
+    @timer
     def __init__(self, transform_input=True):
         super().__init__()
         self.inception_network = torchvision.models.inception_v3(pretrained=True)
         self.inception_network.Mixed_7c.register_forward_hook(self.output_hook)
         self.transform_input = transform_input
 
+    @timer
     def output_hook(self, module, input, output):
         # N x 2048 x 8 x 8
         self.mixed_7c_output = output
 
+    @timer
     def forward(self, x):
         """
         Args:

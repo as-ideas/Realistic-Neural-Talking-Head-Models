@@ -4,9 +4,11 @@ import imp
 import torchvision
 from torchvision.models import vgg19
 from network.model import Cropped_VGG19
+from network.utils import timer
 
 
 class LossCnt(nn.Module):
+    @timer
     def __init__(self, VGGFace_body_path, VGGFace_weight_path, device):
         super(LossCnt, self).__init__()
 
@@ -22,6 +24,7 @@ class LossCnt(nn.Module):
         self.VGGFace.eval()
         self.VGGFace.to(device)
 
+    @timer
     def forward(self, x, x_hat, vgg19_weight=1e-2, vggface_weight=2e-3):
         l1_loss = nn.L1Loss()
 
@@ -96,11 +99,13 @@ class LossCnt(nn.Module):
 
 
 class LossAdv(nn.Module):
+    @timer
     def __init__(self, FM_weight=1e1):
         super(LossAdv, self).__init__()
         self.l1_loss = nn.L1Loss()
         self.FM_weight = FM_weight
 
+    @timer
     def forward(self, r_hat, D_res_list, D_hat_res_list):
         lossFM = 0
         for res, res_hat in zip(D_res_list, D_hat_res_list):
@@ -110,12 +115,14 @@ class LossAdv(nn.Module):
 
 
 class LossMatch(nn.Module):
+    @timer
     def __init__(self, device, match_weight=8e1):
         super(LossMatch, self).__init__()
         self.l1_loss = nn.L1Loss()
         self.match_weight = match_weight
         self.device = device
 
+    @timer
     def forward(self, e_vectors, W, i):
         loss = torch.zeros(e_vectors.shape[0], 1).to(self.device)
         for b in range(e_vectors.shape[0]):
@@ -133,6 +140,7 @@ class LossG(nn.Module):
     output: lossG
     """
 
+    @timer
     def __init__(
         self,
         VGGFace_body_path,
@@ -147,6 +155,7 @@ class LossG(nn.Module):
         self.lossAdv = LossAdv()
         self.lossMatch = LossMatch(device=device)
 
+    @timer
     def forward(self, x, x_hat, r_hat, D_res_list, D_hat_res_list, e_vectors, W, i):
         loss_cnt = self.LossCnt(x, x_hat)
         loss_adv = self.lossAdv(r_hat, D_res_list, D_hat_res_list)
@@ -161,6 +170,7 @@ class LossGF(nn.Module):
     output: lossG
     """
 
+    @timer
     def __init__(
         self,
         VGGFace_body_path,
@@ -174,6 +184,7 @@ class LossGF(nn.Module):
         self.LossCnt = LossCnt(VGGFace_body_path, VGGFace_weight_path, device)
         self.lossAdv = LossAdv()
 
+    @timer
     def forward(self, x, x_hat, r_hat, D_res_list, D_hat_res_list):
         loss_cnt = self.LossCnt(x, x_hat)
         loss_adv = self.lossAdv(r_hat, D_res_list, D_hat_res_list)

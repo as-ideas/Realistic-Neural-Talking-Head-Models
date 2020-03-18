@@ -1,8 +1,10 @@
 import torch
 import torch.nn as nn
+from network.utils import timer
 
 
 class ResBlockDown(nn.Module):
+    @timer
     def __init__(self, in_channel, out_channel, conv_size=3, padding_size=1):
         super(ResBlockDown, self).__init__()
 
@@ -21,6 +23,7 @@ class ResBlockDown(nn.Module):
             nn.Conv2d(out_channel, out_channel, conv_size, padding=padding_size)
         )
 
+    @timer
     def forward(self, x):
         res = x
 
@@ -42,6 +45,7 @@ class ResBlockDown(nn.Module):
 
 
 class SelfAttention(nn.Module):
+    @timer
     def __init__(self, in_channel):
         super(SelfAttention, self).__init__()
 
@@ -55,6 +59,7 @@ class SelfAttention(nn.Module):
         self.softmax = nn.Softmax(-2)  # sum in column j = 1
         self.gamma = nn.Parameter(torch.zeros(1))
 
+    @timer
     def forward(self, x):
         B, C, H, W = x.shape
         f_projection = self.conv_f(x)  # BxC'xHxW, C'=C//8
@@ -78,6 +83,7 @@ class SelfAttention(nn.Module):
         return out
 
 
+@timer
 def adaIN(feature, mean_style, std_style, eps=1e-5):
     B, C, H, W = feature.shape
 
@@ -93,6 +99,7 @@ def adaIN(feature, mean_style, std_style, eps=1e-5):
 
 
 class ResBlock(nn.Module):
+    @timer
     def __init__(self, in_channel):
         super(ResBlock, self).__init__()
 
@@ -109,6 +116,7 @@ class ResBlock(nn.Module):
             nn.Conv2d(in_channel, in_channel, 3, padding=1)
         )
 
+    @timer
     def forward(self, x, psi_slice):
         C = psi_slice.shape[1]
 
@@ -128,6 +136,7 @@ class ResBlock(nn.Module):
 
 
 class ResBlockD(nn.Module):
+    @timer
     def __init__(self, in_channel):
         super(ResBlockD, self).__init__()
 
@@ -144,6 +153,7 @@ class ResBlockD(nn.Module):
             nn.Conv2d(in_channel, in_channel, 3, padding=1)
         )
 
+    @timer
     def forward(self, x):
         res = x
 
@@ -157,6 +167,7 @@ class ResBlockD(nn.Module):
 
 
 class ResBlockUp(nn.Module):
+    @timer
     def __init__(
         self,
         in_channel,
@@ -185,6 +196,7 @@ class ResBlockUp(nn.Module):
             nn.Conv2d(out_channel, out_channel, conv_size, padding=padding_size)
         )
 
+    @timer
     def forward(self, x, psi_slice):
         mean1 = psi_slice[:, 0 : self.in_channel, :]
         std1 = psi_slice[:, self.in_channel : 2 * self.in_channel, :]
@@ -219,15 +231,18 @@ class ResBlockUp(nn.Module):
 
 
 class Padding(nn.Module):
+    @timer
     def __init__(self, in_shape):
         super(Padding, self).__init__()
 
         self.zero_pad = nn.ZeroPad2d(self.findPadSize(in_shape))
 
+    @timer
     def forward(self, x):
         out = self.zero_pad(x)
         return out
 
+    @timer
     def findPadSize(self, in_shape):
         if in_shape < 256:
             pad_size = (256 - in_shape) // 2

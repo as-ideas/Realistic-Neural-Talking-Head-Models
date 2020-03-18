@@ -4,10 +4,12 @@ from matplotlib import pyplot as plt
 import numpy as np
 import torch
 import matplotlib
+from network.utils import timer
 
 matplotlib.use('TkAgg')
 
 
+@timer
 def get_borders(preds):
     minX = maxX = preds[0, 0]
     minY = maxY = preds[0, 1]
@@ -28,6 +30,7 @@ def get_borders(preds):
     return minX, maxX, minY, maxY
 
 
+@timer
 def crop_and_reshape_preds(preds, pad, out_shape=256):
     minX, maxX, minY, maxY = get_borders(preds)
 
@@ -52,6 +55,7 @@ def crop_and_reshape_preds(preds, pad, out_shape=256):
     return preds
 
 
+@timer
 def crop_and_reshape_img(img, preds, pad, out_shape=256):
     minX, maxX, minY, maxY = get_borders(preds)
 
@@ -75,6 +79,7 @@ def crop_and_reshape_img(img, preds, pad, out_shape=256):
     return img
 
 
+@timer
 def generate_landmarks(cap, device, pad):
     """Input: cap a cv2.VideoCapture object, device the torch.device,
 pad the distance in pixel from border to face

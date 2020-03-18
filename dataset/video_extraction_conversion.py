@@ -1,8 +1,8 @@
 import cv2
 import random
-import face_alignment
 from matplotlib import pyplot as plt
 import numpy as np
+import time
 from pathlib import Path
 
 from webcam_demo.webcam_extraction_conversion import (
@@ -52,19 +52,17 @@ def select_frames(video_path, K):
 
 
 @timer
-def generate_landmarks(frames_list, device):
-    if type(device) != str:
-        device = device.type
-
+def generate_landmarks(frames_list, fa):
+    start_time = time.perf_counter()
     frame_landmark_list = []
-    fa = face_alignment.FaceAlignment(
-        face_alignment.LandmarksType._2D, flip_input=False, device=device
-    )
-
     for i in range(len(frames_list)):
         try:
             input = frames_list[i]
+            # fa.get_landmarks takes around 10s per frame
             preds = fa.get_landmarks(input)[0]
+
+            new_time = time.perf_counter() - new_time
+            print(f'generate_landmarks: defining preds: {new_time:.4f}')
 
             dpi = 100
             fig = plt.figure(
@@ -163,10 +161,9 @@ def generate_landmarks(frames_list, device):
             ax.axis('off')
 
             fig.canvas.draw()
-
+            # frombuffer takes around 10s per frame
             data = np.frombuffer(fig.canvas.tostring_rgb(), dtype=np.uint8)
             data = data.reshape(fig.canvas.get_width_height()[::-1] + (3,))
-
             frame_landmark_list.append((input, data))
             plt.close(fig)
         except:
@@ -190,15 +187,8 @@ def select_images_frames(path_to_images):
 
 
 @timer
-def generate_cropped_landmarks(frames_list, device, pad=50):
-    if type(device) != str:
-        device = device.type
-
+def generate_cropped_landmarks(frames_list, fa, pad=50):
     frame_landmark_list = []
-    fa = face_alignment.FaceAlignment(
-        face_alignment.LandmarksType._2D, flip_input=False, device=device
-    )
-
     for i in range(len(frames_list)):
         try:
             input = frames_list[i]
