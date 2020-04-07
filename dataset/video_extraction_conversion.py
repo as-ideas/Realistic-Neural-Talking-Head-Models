@@ -10,6 +10,9 @@ from webcam_demo.webcam_extraction_conversion import (
     crop_and_reshape_img,
 )
 from network.utils import timer
+import matplotlib
+
+matplotlib.use('TkAgg')
 
 
 @timer
@@ -58,16 +61,15 @@ def generate_landmarks(frames_list, fa):
     for i in range(len(frames_list)):
         try:
             input = frames_list[i]
+
             # fa.get_landmarks takes around 10s per frame
             preds = fa.get_landmarks(input)[0]
-
-            new_time = time.perf_counter() - new_time
-            print(f'generate_landmarks: defining preds: {new_time:.4f}')
 
             dpi = 100
             fig = plt.figure(
                 figsize=(input.shape[1] / dpi, input.shape[0] / dpi), dpi=dpi
             )
+
             ax = fig.add_subplot(1, 1, 1)
             ax.imshow(np.ones(input.shape))
             plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
@@ -158,6 +160,7 @@ def generate_landmarks(frames_list, fa):
                 color='pink',
                 lw=2,
             )
+
             ax.axis('off')
 
             fig.canvas.draw()

@@ -34,7 +34,7 @@ class VidDataSet(Dataset):
 
         path = list(Path(self.path_to_mp4).glob('**/*.mp4'))[idx]
         frame_mark = select_frames(path, self.K)
-        frame_mark = generate_landmarks(frame_mark, device=self.device, fa=self.fa)
+        frame_mark = generate_landmarks(frame_mark, fa=self.fa)
         frame_mark = torch.from_numpy(np.array(frame_mark)).type(
             dtype=torch.float
         )  # K,2,224,224,3
