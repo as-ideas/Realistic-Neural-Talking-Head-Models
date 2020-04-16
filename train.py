@@ -8,7 +8,7 @@ import pytorch_ssim
 from pathlib import Path
 import numpy as np
 
-from dataset.dataset_class import VidDataSet
+from dataset.dataset_class import VidDataSet, MyNewDataset
 from loss.loss_discriminator import LossDSCreal, LossDSCfake
 from loss.loss_generator import LossG
 from network.model import Generator, Embedder, Discriminator, PartialInceptionNetwork
@@ -24,9 +24,9 @@ from config import (
 )
 
 """Create dataset and net"""
-dataset = VidDataSet(K=8, path_to_mp4='mp4', device=device)
+dataset = MyNewDataset(path_to_images='clean_dataset', device=device)
 dataLoader = DataLoader(dataset, batch_size=2, shuffle=True)
-print(dataLoader)
+
 # Initialize SummaryWriter for tensorboard
 RUN_NAME = datetime.now().strftime(format='%b%d_%H-%M-%S')
 writer = SummaryWriter(log_dir=f'runs/{RUN_NAME}')
